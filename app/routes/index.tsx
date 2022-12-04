@@ -7,6 +7,8 @@ import type { ActionArgs } from '@remix-run/node';
 import { emitter } from '~/services/emitter.server';
 import React from 'react';
 import { useRealTimeLoaderData } from '~/use-loaderData';
+import { useDataRefresh, useEventSource } from 'remix-utils';
+import { useRevalidator } from '~/use-revalidator';
 
 export async function loader({ request }: LoaderArgs) {
   return json({ issues: await getIssues() });
@@ -15,13 +17,13 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
   try {
-    await addIssue({
-      id: body.id.toString(),
-      title: '',
-      userId: '',
-      priority: 0,
-      status: 0,
-    });
+    // await addIssue({
+    //   id: body.id.toString(),
+    //   title: '',
+    //   userId: '',
+    //   priority: 0,
+    //   status: 0,
+    // });
 
     const hasListener = emitter.emit('message', body.id.toString());
     console.log('hasListener', hasListener);
@@ -44,8 +46,12 @@ export default function Index() {
   let data = useRealTimeLoaderData('/subscription', {
     event: 'new-message',
   });
-
+  // let lastMessageId = useEventSource('/subscription', {
+  //   event: 'new-message',
+  // });
+  let { refresh } = useDataRefresh();
   React.useEffect(() => {
+    refresh();
     console.log('🚀 ~ file: index.tsx:59 ~ Index ~ data', data);
   }, [data]);
 

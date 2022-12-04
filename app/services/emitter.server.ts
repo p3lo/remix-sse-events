@@ -1,3 +1,16 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 
-export let emitter = new EventEmitter();
+let emitter: EventEmitter;
+declare global {
+  // eslint-disable-next-line no-var
+  var __emmiter: EventEmitter;
+}
+if (process.env.NODE_ENV === 'production') {
+  emitter = new EventEmitter();
+} else {
+  if (!global.__emmiter) {
+    global.__emmiter = new EventEmitter();
+  }
+  emitter = global.__emmiter;
+}
+export { emitter };
